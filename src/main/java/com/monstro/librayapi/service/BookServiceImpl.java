@@ -3,6 +3,10 @@ package com.monstro.librayapi.service;
 import com.monstro.librayapi.exception.BusinessException;
 import com.monstro.librayapi.model.entity.Book;
 import com.monstro.librayapi.model.repository.BookRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -26,16 +30,41 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Optional<Book> getById(Long id) {
-        return Optional.empty();
+        return repository.findById(Math.toIntExact(id));
     }
 
     @Override
     public void delete(Book book) {
+        if(book == null || book.getId() == null){
+            throw new IllegalArgumentException("book id cant be null");
+        }
 
+        this.repository.delete(book);
     }
 
     @Override
     public Book update(Book book) {
-        return book;
+        if(book == null || book.getId() == null){
+            throw new IllegalArgumentException("book id cant be null");
+        }
+
+        return  this.repository.save(book);
+    }
+
+    @Override
+    public Page<Book> find(Book filter, Pageable pageRequest) {
+        Example<Book> exmple = Example.of(filter, ExampleMatcher
+                .matching()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(
+                ExampleMatcher.StringMatcher.CONTAINING));
+
+        return  repository.findAll(exmple, pageRequest);
+    }
+
+    @Override
+    public Optional<Book> getByIsbn(String isbn) {
+        return null;
     }
 }
